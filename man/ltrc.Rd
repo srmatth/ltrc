@@ -9,7 +9,7 @@ ltrc(
   trunc_time,
   data = NULL,
   n_start = 10,
-  int_knots = 5,
+  int_knots = 2,
   verbose = FALSE,
   n_folds = 5,
   knot_range = 1:10,
@@ -45,6 +45,14 @@ defaults to \code{FALSE}}
 \item{boundary_knots}{if you want to fix the knots on the spline, pass the boundary knots here}
 
 \item{sd_multiplier}{controls the variance of the random noise for the parameter starting values}
+
+\item{diag_only}{bool indicating whether or not only the diagonal elements of the information
+matrix should be used during fitting. defaults to \code{TRUE}}
+
+\item{iter_max}{the maximum number of iterations for the Newton-Raphson Algorithm}
+
+\item{return_all}{bool indicating whether to include the results of all random starts in the
+returned list}
 }
 \value{
 a list with several elements

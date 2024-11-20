@@ -43,7 +43,14 @@ get_clean_model <- function(mod) {
 
 
 
-
+#' Predict using an LTRC Model
+#'
+#' @param mod a model fit using the `ltrc()` function
+#' @param newdata a `matrix` or `data.frame` with the columns matching the order
+#'   of the predictors in the model
+#'
+#' @return a vector of predictions
+#' @export
 predict.ltrc_mod <- function(object, newdata, ...) {
   # Check if newdata is provided
   if (missing(newdata)) {
@@ -77,7 +84,14 @@ predict.ltrc_mod <- function(object, newdata, ...) {
   return(as.vector(predictions)) # Convert to a vector for convenience
 }
 
-# Define summary method
+#' Summary of an LTRC Model
+#'
+#' Prints out a detailed summary of a fitted LTRC model.
+#'
+#' @param mod a model fit using the `ltrc()` function
+#'
+#' @return None
+#' @export
 summary.ltrc_mod <- function(object, ...) {
   cat("Summary of ltrc_mod object\n")
   cat("--------------------------\n")
@@ -117,7 +131,14 @@ summary.ltrc_mod <- function(object, ...) {
   cat(sprintf("  Standard Deviation: %.4f\n", residual_sd))
 }
 
-
+#' Print an LTRC Model
+#'
+#' Prints out a brief summary of a fitted LTRC model.
+#'
+#' @param mod a model fit using the `ltrc()` function
+#'
+#' @return None
+#' @export
 print.ltrc_mod <- function(object, ...) {
   cat("ltrc_mod Object\n")
   cat("----------------\n")
