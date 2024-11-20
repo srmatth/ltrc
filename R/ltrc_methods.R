@@ -1,0 +1,131 @@
+
+#' Get Clean LTRC Model Object
+#'
+#' @param mod a model fit using the `ltrc()` function
+#'
+#' @return an object of class `"ltrc_mod"` containing clean information from the model fit, which can
+#'   then be passed to other methods
+#' @export
+get_clean_model <- function(mod) {
+  clean_mod <- list(
+    parameters = list(
+      beta = mod$theta[1:mod$p],
+      gamma = mod$theta[(mod$p+1):length(mod$theta)],
+      beta_start = mod$theta0[1:mod$p],
+      gamma_start = mod$theta0[(mod$p+1):length(mod$theta)],
+      interior_knots = mod$knots,
+      boundary_knots = mod$boundary_knots
+    ),
+    metrics = list(
+      log_likelihood = mod$lnlklhd,
+      log_likelihood_start = mod$lnlklhd0,
+      num_iter = mod$nbriter,
+      converge = mod$converge
+    ),
+    data = list(
+      observed_response = mod$response,
+      predictors = mod$predictors,
+      num_predictors = mod$p,
+      fitted_response = mod$fitted_values,
+      residuals = mod$residuals,
+      score = mod$score,
+      information = mod$inform
+    )
+  )
+
+  if (!is.null(mod$all_res)) {
+    clean_mod$all_starts <- mod$all_starts
+    clean_mod$all_res <- mod$all_res
+  }
+  class(clean_mod) <- "ltrc_mod"
+  clean_mod
+}
+
+
+
+
+predict.ltrc_mod <- function(object, newdata, ...) {
+  # Check if newdata is provided
+  if (missing(newdata)) {
+    stop("Please provide newdata for prediction.")
+  }
+
+  # Ensure newdata is a matrix or data frame
+  if (!is.matrix(newdata) && !is.data.frame(newdata)) {
+    stop("newdata must be a matrix or data frame.")
+  }
+
+  # Check if the number of predictors matches
+  num_predictors <- object$data$num_predictors
+  if (ncol(newdata) != num_predictors) {
+    stop(paste(
+      "newdata must have exactly", num_predictors, "columns,",
+      "matching the number of predictors in the model."
+    ))
+  }
+
+  # Extract beta coefficients
+  beta <- object$parameters$beta
+
+  # Ensure newdata is a matrix for matrix multiplication
+  newdata <- as.matrix(newdata)
+
+  # Compute predictions as a linear combination of predictors and beta
+  predictions <- newdata %*% beta
+
+  # Return the predictions
+  return(as.vector(predictions)) # Convert to a vector for convenience
+}
+
+# Define summary method
+summary.ltrc_mod <- function(object, ...) {
+  cat("Summary of ltrc_mod object\n")
+  cat("--------------------------\n")
+
+  # Parameters
+  cat("Model Parameters:\n")
+  cat("  Beta Coefficients:\n")
+  print(object$parameters$beta)
+  cat("  Gamma Coefficients:\n")
+  print(object$parameters$gamma)
+  cat("\nInterior Knots:\n")
+  print(object$parameters$interior_knots)
+  cat("Boundary Knots:\n")
+  print(object$parameters$boundary_knots)
+
+  # Metrics
+  cat("\nModel Metrics:\n")
+  cat(sprintf("  Log-Likelihood: %.4f\n", object$metrics$log_likelihood))
+  cat(sprintf("  Log-Likelihood (Start): %.4f\n", object$metrics$log_likelihood_start))
+  cat(sprintf("  Number of Iterations: %d\n", object$metrics$num_iter))
+  cat(sprintf("  Converged: %s\n", ifelse(object$metrics$converge, "Yes", "No")))
+
+  # Data Summary
+  cat("\nData Summary:\n")
+  cat(sprintf("  Number of Predictors: %d\n", object$data$num_predictors))
+  cat(sprintf("  Number of Observed Responses: %d\n", length(object$data$observed_response)))
+
+  residuals <- object$data$residuals
+  residual_summary <- c(min(residuals), quantile(residuals, 0.25), median(residuals), quantile(residuals, 0.75), max(residuals))
+  residual_sd <- sd(residuals)
+  residual_mean <- mean(residuals)
+
+  cat("\nResiduals Summary:\n")
+  cat(sprintf("  Min: %.4f, 1st Qu.: %.4f, Median: %.4f, Mean: %.4f, 3rd Qu.: %.4f, Max: %.4f\n",
+              residual_summary[1], residual_summary[2], residual_summary[3], residual_mean,
+              residual_summary[4], residual_summary[4]))
+  cat(sprintf("  Standard Deviation: %.4f\n", residual_sd))
+}
+
+
+print.ltrc_mod <- function(object, ...) {
+  cat("ltrc_mod Object\n")
+  cat("----------------\n")
+  cat("Model Parameters:\n")
+  cat("  Beta Coefficients:\n")
+  print(object$parameters$beta)
+  cat("\nMetrics:\n")
+  cat(sprintf("  Log-Likelihood: %.4f\n", object$metrics$log_likelihood))
+  cat(sprintf("  Converged: %s\n", ifelse(object$metrics$converge, "Yes", "No")))
+}
+
