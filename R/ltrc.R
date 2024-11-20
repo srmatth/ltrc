@@ -15,10 +15,15 @@
 #' @param knots if you want to fix the knots on the spline, pass the knots here
 #' @param boundary_knots if you want to fix the knots on the spline, pass the boundary knots here
 #' @param sd_multiplier controls the variance of the random noise for the parameter starting values
+#' @param diag_only bool indicating whether or not only the diagonal elements of the information
+#'   matrix should be used during fitting. defaults to `TRUE`
+#' @param iter_max the maximum number of iterations for the Newton-Raphson Algorithm
+#' @param return_all bool indicating whether to include the results of all random starts in the
+#'   returned list
 #'
 #' @return a list with several elements
 #' @export
-ltrc <- function(formula, trunc_time, data = NULL, n_start = 10, int_knots = 5, verbose = FALSE,
+ltrc <- function(formula, trunc_time, data = NULL, n_start = 10, int_knots = 2, verbose = FALSE,
                  n_folds = 5, knot_range = 1:10, knots = NULL, boundary_knots = NULL, sd_multiplier = 3,
                  diag_only = TRUE, iter_max = 100, return_all = FALSE) {
   dat_l <- extract_surv_components(formula, data)
@@ -146,6 +151,13 @@ ltrc <- function(formula, trunc_time, data = NULL, n_start = 10, int_knots = 5, 
   }
 
   best_res$int_knots <- int_knots
+  best_res$response <- y
+  best_res$predictors <- X
+  best_res$fitted_values <- X %*% best_res$theta[1:p]
+  best_res$residuals <- best_res$response - best_res$fitted_values
+  best_res$p <- p
+  best_res$formula <- formula
+
   best_res
 
 }

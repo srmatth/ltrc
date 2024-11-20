@@ -12,7 +12,6 @@
 #'   right-censored, left-truncated only, right-censored only, or a normal linear model
 #'
 #' @return a list with the simulation results
-#' @export
 sim_iteration <- function(i, FINAL_KNOTS, true_beta, n, error_dist, true_hazard, sd_multiplier = 3,
                           n_start = 20, type_data = "ltrc", verbose = FALSE, diag_only = TRUE, return_all = FALSE) {
 
@@ -54,7 +53,7 @@ sim_iteration <- function(i, FINAL_KNOTS, true_beta, n, error_dist, true_hazard,
     )
 
     tictoc::tic()
-    res <- ltrc(formula = survival::Surv(y_obs, delta_obs) ~ x_obs, t_obs, data = dat, n_start = n_start, int_knots = FINAL_KNOTS,
+    res <- ltrc::ltrc(formula = survival::Surv(y_obs, delta_obs) ~ x_obs, t_obs, data = dat, n_start = n_start, int_knots = FINAL_KNOTS,
                 sd_multiplier = sd_multiplier, verbose = verbose, diag_only = diag_only, return_all = return_all)
     time <- tictoc::toc()
 

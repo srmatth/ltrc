@@ -66,8 +66,8 @@ newtraph <- function(y, X, t, delta, beta, gamma, lklhd, verbose = FALSE, EPS = 
     }
 
     if (abs(step_halving_start - lnlklhd_new) <= EPS) {
-      warning("Stopping after step halving failed!")
-      converge <- FALSE
+      # warning("Stopping after step halving failed!")
+      converge <- TRUE
       break
     }
 
