@@ -1,18 +1,23 @@
 Package: ltrc
-Title: Fit Linear Model for Left-Truncated Right-Censored Data
-Version: 0.0.0.9008
+Title: Fit Linear Models for Left-Truncated and Right-Censored Data
+Version: 0.0.0.9009
 Authors@R: 
     person("Spencer", "Matthews", , "spencer.matthews@uci.edu", role = c("aut", "cre"),
-           comment = c(ORCID = "YOUR-ORCID-ID"))
-Description: What the package does (one paragraph).
-License: `use_mit_license()`, `use_gpl3_license()` or friends to pick a
-    license
+           comment = c(ORCID = "0000-0002-7109-7474"))
+Description: This package enables the fitting of semiparametric linear models on data that
+  are subject to both right-censoring and left-truncation. This method is presented in the paper 
+  "Regression for Left-Truncated and Right-Censored Data: A Semiparametric Sieve Likelihood Approach"
+   by Spencer Matthews and Bin Nan.
+License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.3
 Imports: 
     dplyr,
+    extRemes,
     magrittr,
+    numDeriv,
     splines2,
+    stringr,
     survival,
     tictoc

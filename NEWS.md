@@ -1,5 +1,11 @@
 # ltrc (development version)
 
+## 0.0.0.9009
+
+* Added additional documentation to all functions
+* Added `print()`, `summary()` and `predict()` methods for the class `"ltrc_mod"`
+* Major updates to the `README`
+
 ## 0.0.0.9008
 
 * Added in efficient score function variance estimation to the simulation study
