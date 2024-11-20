@@ -6,3 +6,7 @@
 *.csv
 *.zip
 inst/ltrc_*
+inst/data-raw/*
+inst/old_sim*
+inst/negative_var_test/*
+inst/sim_res/*
