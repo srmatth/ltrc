@@ -38,7 +38,6 @@ See the example below:
 ```{r}
 ## Load the libraries
 library(ltrc)
-library(dplyr)
 
 ## Simulate Data
 true_beta <- 1
@@ -65,7 +64,10 @@ true_y_obs <- y[sampled_indx]
 dat <- data.frame(
   y_obs, delta_obs, x_obs
 )
+```
 
+
+```{r}
 ## Fit the Model
 res <- ltrc(
   formula = survival::Surv(y_obs, delta_obs) ~ x_obs, 
@@ -78,12 +80,15 @@ res <- ltrc(
   diag_only = TRUE, 
   return_all = FALSE
 )
+```
 
+```{r}
 ## Clean and Summarize the Model
 clean_res <- get_clean_model(res)
-class(clean_res)
 summary(clean_res)
+```
 
+```{r}
 ## Predict on New Data
 predict(clean_res, newdata = data.frame(x = c(1.5, 0.8, 2.4)))
 ```

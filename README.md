@@ -29,15 +29,6 @@ and right-censoring. See the example below:
 ``` r
 ## Load the libraries
 library(ltrc)
-library(dplyr)
-#> 
-#> Attaching package: 'dplyr'
-#> The following objects are masked from 'package:stats':
-#> 
-#>     filter, lag
-#> The following objects are masked from 'package:base':
-#> 
-#>     intersect, setdiff, setequal, union
 
 ## Simulate Data
 true_beta <- 1
@@ -64,7 +55,9 @@ true_y_obs <- y[sampled_indx]
 dat <- data.frame(
   y_obs, delta_obs, x_obs
 )
+```
 
+``` r
 ## Fit the Model
 res <- ltrc(
   formula = survival::Surv(y_obs, delta_obs) ~ x_obs, 
@@ -77,29 +70,29 @@ res <- ltrc(
   diag_only = TRUE, 
   return_all = FALSE
 )
+```
 
+``` r
 ## Clean and Summarize the Model
 clean_res <- get_clean_model(res)
-class(clean_res)
-#> [1] "ltrc_mod"
 summary(clean_res)
 #> Summary of ltrc_mod object
 #> --------------------------
 #> Model Parameters:
 #>   Beta Coefficients:
-#> [1] 1.015835
+#> [1] 1.036506
 #>   Gamma Coefficients:
-#> [1] -46.658054  -5.658228  -1.865497   1.209199   1.469397
+#> [1] -44.3166321  -8.6769756  -0.3858539   0.6347994   1.0623232
 #> 
 #> Interior Knots:
-#> [1] 0.1203628
+#> [1] -0.01902826
 #> Boundary Knots:
-#> [1] -8.827919  3.138155
+#> [1] -8.798073  2.957850
 #> 
 #> Model Metrics:
-#>   Log-Likelihood: -386.5675
-#>   Log-Likelihood (Start): -1146.0154
-#>   Number of Iterations: 11
+#>   Log-Likelihood: -391.1752
+#>   Log-Likelihood (Start): -1869.1214
+#>   Number of Iterations: 23
 #>   Converged: Yes
 #> 
 #> Data Summary:
@@ -107,12 +100,14 @@ summary(clean_res)
 #>   Number of Observed Responses: 300
 #> 
 #> Residuals Summary:
-#>   Min: -2.9382, 1st Qu.: -0.5653, Median: 0.1346, Mean: 0.1327, 3rd Qu.: 0.8942, Max: 0.8942
-#>   Standard Deviation: 1.0218
+#>   Min: -2.5786, 1st Qu.: -0.5950, Median: -0.0019, Mean: 0.0348, 3rd Qu.: 0.7380, Max: 0.7380
+#>   Standard Deviation: 1.0072
+```
 
+``` r
 ## Predict on New Data
 predict(clean_res, newdata = data.frame(x = c(1.5, 0.8, 2.4)))
-#> [1] 1.523752 0.812668 2.438004
+#> [1] 1.5547588 0.8292047 2.4876141
 ```
 
 Note that the current output the the `ltrc()` function is quite raw. We
