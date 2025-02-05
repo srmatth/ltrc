@@ -29,7 +29,8 @@ get_clean_model <- function(mod) {
       fitted_response = mod$fitted_values,
       residuals = mod$residuals,
       score = mod$score,
-      information = mod$inform
+      information = mod$inform,
+      information_efficient = mod$efficient_score_info
     )
   )
 
@@ -135,7 +136,7 @@ summary.ltrc_mod <- function(object, ...) {
 #'
 #' Prints out a brief summary of a fitted LTRC model.
 #'
-#' @param mod a model fit using the `ltrc()` function
+#' @param object a model fit using the `ltrc()` function
 #'
 #' @return None
 #' @export
@@ -148,5 +149,30 @@ print.ltrc_mod <- function(object, ...) {
   cat("\nMetrics:\n")
   cat(sprintf("  Log-Likelihood: %.4f\n", object$metrics$log_likelihood))
   cat(sprintf("  Converged: %s\n", ifelse(object$metrics$converge, "Yes", "No")))
+}
+
+#' Variance-Covariance Matrix for LTRC Model Parameters
+#'
+#' @param object a model fit using the `ltrc()` function
+#' @param type character string specifying the method used to compute the
+#'   variance, one of `c("efficient_score", "inverse_information")`
+#' @param spline_params Logical indicating if the spline parameter variances
+#'   should be included in the returned matrix. Only for `type = "inverse_information`.
+#'   Defaults to `FALSE`.
+#' @param ... unused additional arguments
+#'
+#' @return a variance-covariance matrix
+#' @export
+vcov.ltrc_mod <- function(object, type = c("efficient_score", "inverse_information"), spline_params = FALSE, ...) {
+  type = type[1]
+  if (type == "efficient_score") {
+    return(solve(object$data$information_efficient))
+  } else if (type == "inverse_information") {
+    mat <- solve(object$data$information)
+    if (!spline_params) mat <- mat[1:object$data$num_predictors, 1:object$data$num_predictors]
+    return(mat)
+  } else{
+    stop("Argument `type` must be one of `c('efficient_score', 'inverse_information')`")
+  }
 }
 

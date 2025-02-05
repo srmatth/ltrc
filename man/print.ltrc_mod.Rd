@@ -7,7 +7,7 @@
 \method{print}{ltrc_mod}(object, ...)
 }
 \arguments{
-\item{mod}{a model fit using the \code{ltrc()} function}
+\item{object}{a model fit using the \code{ltrc()} function}
 }
 \value{
 None

@@ -80,19 +80,19 @@ summary(clean_res)
 #> --------------------------
 #> Model Parameters:
 #>   Beta Coefficients:
-#> [1] 1.036506
+#> [1] 0.992372
 #>   Gamma Coefficients:
-#> [1] -44.3166321  -8.6769756  -0.3858539   0.6347994   1.0623232
+#> [1] -61.9380272  -5.4016057  -1.6649926   1.0856196   0.6504792
 #> 
 #> Interior Knots:
-#> [1] -0.01902826
+#> [1] 0.08582515
 #> Boundary Knots:
-#> [1] -8.798073  2.957850
+#> [1] -8.652591  2.958868
 #> 
 #> Model Metrics:
-#>   Log-Likelihood: -391.1752
-#>   Log-Likelihood (Start): -1869.1214
-#>   Number of Iterations: 23
+#>   Log-Likelihood: -389.7480
+#>   Log-Likelihood (Start): -679.0375
+#>   Number of Iterations: 22
 #>   Converged: Yes
 #> 
 #> Data Summary:
@@ -100,14 +100,27 @@ summary(clean_res)
 #>   Number of Observed Responses: 300
 #> 
 #> Residuals Summary:
-#>   Min: -2.5786, 1st Qu.: -0.5950, Median: -0.0019, Mean: 0.0348, 3rd Qu.: 0.7380, Max: 0.7380
-#>   Standard Deviation: 1.0072
+#>   Min: -2.9755, 1st Qu.: -0.5987, Median: 0.0877, Mean: 0.0889, 3rd Qu.: 0.8060, Max: 0.8060
+#>   Standard Deviation: 1.0288
 ```
 
 ``` r
 ## Predict on New Data
 predict(clean_res, newdata = data.frame(x = c(1.5, 0.8, 2.4)))
-#> [1] 1.5547588 0.8292047 2.4876141
+#> [1] 1.4885581 0.7938976 2.3816929
+```
+
+``` r
+## Put a 95% confidence interval on the parameter estimate
+## Using the square of the efficient score function (Theoretically supported)
+se_beta_1 <- vcov(clean_res, type = "efficient_score") %>% diag() %>% sqrt()
+clean_res$parameters$beta + c(-1, 1) * qnorm(0.975) * se_beta_1
+#> [1] 0.911397 1.073347
+
+## Using the inverse of the information matrix for all the parameters (empirically supported)
+se_beta_1 <- vcov(clean_res, type = "inverse_information") %>% diag() %>% sqrt() %>% `[`(1)
+clean_res$parameters$beta + c(-1, 1) * qnorm(0.975) * se_beta_1
+#> [1] 0.9004055 1.0843386
 ```
 
 Note that the current output the the `ltrc()` function is quite raw. We
@@ -117,6 +130,10 @@ will solve this problem and allows the user to pass the newly cleaned
 object (of class `"ltrc_mod"`) to common R functions such as `predict()`
 and `summary()`. This process will be refined as the package is prepared
 for submission to CRAN.
+
+Further note that any transformations applied to the response variable
+must also be applied to the left truncation time BEFORE being passed to
+the function.
 
 ## Paper Code
 

@@ -1,5 +1,10 @@
 # ltrc (development version)
 
+## 0.0.0.9010
+
+* Included the efficient score function variance estimator in the model function
+* Added `vcov()` method for getting the variance-covariance matrix for the regression parameters
+
 ## 0.0.0.9009
 
 * Added additional documentation to all functions

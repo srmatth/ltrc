@@ -150,6 +150,80 @@ ltrc <- function(formula, trunc_time, data = NULL, n_start = 10, int_knots = 2, 
     best_res <- append(best_res, list(knot_lnlklhds = knot_lnlklhds))
   }
 
+  ## Compute the efficient score function for the best model
+  ## Using the estimated betas
+  est_beta <- matrix(best_res$theta[1:p], nrow = p)
+  epsilon <- y - X %*% est_beta
+  tau <- t - X %*% est_beta
+
+  conditional_means <- matrix(nrow = length(epsilon), ncol = p)
+  for (i in 1:length(epsilon)) {
+    conditional_means[i,] <- colMeans(matrix(X[(epsilon[i] <= epsilon) & (epsilon[i] >= tau),], ncol = p))
+  }
+  log_haz <- predict_log_hazard(
+    x = epsilon,
+    gamma = best_res$theta[(p+1):length(best_res$theta)], knots = best_res$knots,
+    boundary_knots = best_res$boundary_knots, deriv = 0
+  )
+  g_dot <- predict_log_hazard(
+    x = epsilon,
+    gamma = best_res$theta[(p+1):length(best_res$theta)], knots = best_res$knots,
+    boundary_knots = best_res$boundary_knots, deriv = 1
+  )
+
+  # sort the data
+  e_order <- order(epsilon)
+  epsilon_sorted <- epsilon[e_order]
+  tau_sorted <- tau[e_order]
+  log_haz_sorted <- log_haz[e_order]
+  g_dot_sorted <- g_dot[e_order]
+  conditional_means_sorted <- conditional_means[e_order,]
+  diffs_sorted <-c(diff(epsilon_sorted), 0)
+  delta_sorted <- delta[e_order]
+  x_sorted <- X[e_order,]
+
+  ## Martingale Representation ----
+
+  m_s <- function(s, d_, t_, e_) {
+    res <- numeric(length(s))
+    for (j in 1:length(s)) {
+      u <- s[j]
+      first_term <- d_ * as.numeric(e_ <= u)
+      if (u <= t_) second_term <- 0
+      else {
+        upper_bound <- e_
+        if (u <= e_) upper_bound <- u
+
+        indicator_vec <- as.numeric((epsilon_sorted >= t_) & (epsilon_sorted <= upper_bound))
+        second_term <- sum(indicator_vec * exp(log_haz_sorted) * diffs_sorted)
+      }
+
+      res[j] <- first_term - second_term
+    }
+    res
+  }
+
+  contribs_m <- matrix(nrow = length(epsilon), ncol = p)
+  for (i in 1:length(epsilon)) {
+    e_i <- epsilon[i]
+    t_i <- tau[i]
+    d_i <- delta[i]
+    x_i <- X[i,]
+    m_s(epsilon_sorted[1], d_i, t_i, e_i)
+    mart_vals <- m_s(epsilon_sorted, d_i, t_i, e_i)
+    dms <- c(diff(mart_vals), 0)
+    uni_dimensional_part <- dms * (-g_dot_sorted)
+    multi_dimensional_part <- matrix(rep(x_i, length(epsilon)), ncol = p, byrow = TRUE) - conditional_means_sorted
+    contribs_m[i,] <- t(uni_dimensional_part) %*% multi_dimensional_part
+  }
+
+  efficient_score <- colSums(contribs_m)
+
+  efficient_score_info <- matrix(0, ncol = p, nrow = p)
+  for (i in 1:nrow(contribs_m)) {
+    efficient_score_info <- efficient_score_info + (contribs_m[i,] %*% t(contribs_m[i,]))
+  }
+
   best_res$int_knots <- int_knots
   best_res$response <- y
   best_res$predictors <- X
@@ -157,6 +231,7 @@ ltrc <- function(formula, trunc_time, data = NULL, n_start = 10, int_knots = 2, 
   best_res$residuals <- best_res$response - best_res$fitted_values
   best_res$p <- p
   best_res$formula <- formula
+  best_res$efficient_score_info <- efficient_score_info
 
   best_res
 

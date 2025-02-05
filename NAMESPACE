@@ -3,6 +3,7 @@
 S3method(predict,ltrc_mod)
 S3method(print,ltrc_mod)
 S3method(summary,ltrc_mod)
+S3method(vcov,ltrc_mod)
 export("%>%")
 export(get_clean_model)
 export(ltrc)

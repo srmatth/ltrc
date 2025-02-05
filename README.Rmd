@@ -93,8 +93,21 @@ summary(clean_res)
 predict(clean_res, newdata = data.frame(x = c(1.5, 0.8, 2.4)))
 ```
 
+```{r}
+## Put a 95% confidence interval on the parameter estimate
+## Using the square of the efficient score function (Theoretically supported)
+se_beta_1 <- vcov(clean_res, type = "efficient_score") %>% diag() %>% sqrt()
+clean_res$parameters$beta + c(-1, 1) * qnorm(0.975) * se_beta_1
+
+## Using the inverse of the information matrix for all the parameters (empirically supported)
+se_beta_1 <- vcov(clean_res, type = "inverse_information") %>% diag() %>% sqrt() %>% `[`(1)
+clean_res$parameters$beta + c(-1, 1) * qnorm(0.975) * se_beta_1
+```
+
 Note that the current output the the `ltrc()` function is quite raw. We have left it as such in order to maintain the reproducibility of the code used for the paper. However, using the `get_clean_model()` function will solve this problem and allows the user to pass the newly cleaned object (of class `"ltrc_mod"`) to common R functions such as `predict()` and `summary()`.
 This process will be refined as the package is prepared for submission to CRAN.
+
+Further note that any transformations applied to the response variable must also be applied to the left truncation time BEFORE being passed to the function.
 
 ## Paper Code
 
