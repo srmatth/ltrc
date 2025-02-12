@@ -46,6 +46,9 @@ get_clean_model <- function(mod) {
 
 #' Predict using an LTRC Model
 #'
+#' Note that we need to add on the intercept by taking the mean of the residuals.
+#' This may make the predictions not theoretically sound.
+#'
 #' @param mod a model fit using the `ltrc()` function
 #' @param newdata a `matrix` or `data.frame` with the columns matching the order
 #'   of the predictors in the model
@@ -79,7 +82,7 @@ predict.ltrc_mod <- function(object, newdata, ...) {
   newdata <- as.matrix(newdata)
 
   # Compute predictions as a linear combination of predictors and beta
-  predictions <- newdata %*% beta
+  predictions <- newdata %*% beta + mean(object$data$residuals)
 
   # Return the predictions
   return(as.vector(predictions)) # Convert to a vector for convenience

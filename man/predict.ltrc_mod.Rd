@@ -16,5 +16,6 @@ of the predictors in the model}
 a vector of predictions
 }
 \description{
-Predict using an LTRC Model
+Note that we need to add on the intercept by taking the mean of the residuals.
+This may make the predictions not theoretically sound.
 }
