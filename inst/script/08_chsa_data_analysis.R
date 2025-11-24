@@ -35,7 +35,16 @@ ltrc_mod <- ltrc(
   trunc_time = mod_dat$log_t,
   data = mod_dat,
   n_start = 10,
-  int_knots = 1
+  int_knots = -1, n_folds = 5,
+  knot_range = 1:3
+)
+
+ltrc_mod <- ltrc(
+  formula = survival::Surv(log_y, delta) ~ dx_4 + dx_2 + age + is_female,
+  trunc_time = mod_dat$log_t,
+  data = mod_dat,
+  n_start = 10,
+  int_knots = 2
 )
 
 ltrc_mod_age <- ltrc(
@@ -43,7 +52,7 @@ ltrc_mod_age <- ltrc(
   trunc_time = mod_dat$log_t,
   data = mod_dat,
   n_start = 10,
-  int_knots = 1
+  int_knots = 2
 )
 
 ltrc_mod_female <- ltrc(
