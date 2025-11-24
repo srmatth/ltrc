@@ -33,6 +33,8 @@ ad_clean <- ad_data %>% # start with 921 rows
     stroke, heartdis, comorbidity
   )
 
+ad_clean <- ad_clean %>%
+  filter(second_cohort == 1)
 # mean(ad_clean$delta == 0) # 54.17% Censoring
 sum(ad_clean$y_scaled == 1)
 
@@ -107,23 +109,25 @@ mod_dat <- ad_clean %>%
     mod_t = log(t_scaled / (1 - t_scaled)),
     mod_death = agedeath - 90
   )
-
+tictoc::tic()
 cv_fit <- ltrc(
   survival::Surv(mod_y, delta) ~ second_cohort + is_female + graduated_college + stroke + heartdis,
   trunc_time = mod_dat$mod_t, data = mod_dat,
   n_start = 10, int_knots = -1,return_all = TRUE
 )
+tictoc::toc()
 
 ggplot() +
   aes(x = 1:2, y = cv_fit$knot_lnlklhds[1:2]) +
   geom_line() +
   geom_point()
-
+tictoc::tic()
 mod_fit <- ltrc(
   survival::Surv(mod_y, delta) ~ mod_death + second_cohort + is_female + graduated_college + comorbidity,
   trunc_time = mod_dat$mod_t, data = mod_dat,
-  n_start = 10, int_knots = 2,return_all = TRUE
+  n_start = 10, int_knots = 8,return_all = TRUE
 )
+tictoc::toc()
 betas <- mod_fit$theta[1:5]
 se <- (solve(mod_fit$inform) %>% diag() %>% sqrt())[1:5]
 

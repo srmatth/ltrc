@@ -1,5 +1,17 @@
 # ltrc (development version)
 
+## 0.0.0.9013
+
+* More simulation updates, reflecting the work of Ning et al. with more error distributions
+
+## 0.0.0.9012
+
+* Additional new simulations, similar to the original but making the data generating process more reflective of reality
+
+## 0.0.0.9011
+
+* Changed around the simulations for paper reviews
+
 ## 0.0.0.9010
 
 * Included the efficient score function variance estimator in the model function

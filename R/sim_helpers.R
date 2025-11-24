@@ -99,16 +99,26 @@ true_hazard_a <- function(x) {
   return(hazard)
 }
 
+# true_hazard_b <- function(x) {
+#   pdf <- dunif(x, 0.5, 1.5)
+#
+#   survival_function <- 1 - punif(x, 0.5, 1.5)
+#
+#   hazard <- pdf / survival_function
+#
+#   return(hazard)
+# }
+
 true_hazard_b <- function(x) {
-  pdf <- extRemes::devd(x)
-  survival_function <- 1 - extRemes::pevd(x)
+  pdf <- extRemes::devd(x, loc = 0.87, scale = 0.2250791)
+  survival_function <- 1 - extRemes::pevd(x, loc = 0.87, scale = 0.2250791)
   hazard <- pdf / survival_function
   return(hazard)
 }
 
 true_hazard_c <- function(x) {
   # PDF of the standard normal distribution
-  pdf <- 0.5 * dnorm(x) + 0.5 * dnorm(x, 0, 3)
+  pdf <- 0.5 * dnorm(x, 1, sqrt(1/8)) + 0.5 * dnorm(x, 1, sqrt(1/24))
 
   # Survival function of the standard normal distribution
   pt1 <- numeric(length(x))
@@ -116,12 +126,12 @@ true_hazard_c <- function(x) {
   for (i in 1:length(x)) {
     # print(i)
     pt1[i] <- integrate(
-      function(s) {0.5 * dnorm(s)},
+      function(s) {0.5 * dnorm(s, 1, sqrt(1/24))},
       lower = -10,
       upper = x[i]
     )[[1]]
     pt2[i] <- integrate(
-      function(s) {0.5 * dnorm(s, 0, 3)},
+      function(s) {0.5 * dnorm(s, 1, sqrt(1/8))},
       lower = -10,
       upper = x[i]
     )[[1]]
@@ -136,19 +146,19 @@ true_hazard_c <- function(x) {
 
 true_hazard_d <- function(x) {
   # PDF of the standard normal distribution
-  pdf <- 0.5 * dnorm(x) + 0.5 * dnorm(x, -1, 0.5)
+  pdf <- 0.5 * dnorm(x, 1.15, sqrt(1/12)) + 0.5 * dnorm(x, 0.85, sqrt(1/24))
 
   # Survival function of the standard normal distribution
   pt1 <- numeric(length(x))
   pt2 <- numeric(length(x))
   for (i in 1:length(x)) {
     pt1[i] <- integrate(
-      function(s) {0.5 * dnorm(s)},
+      function(s) {0.5 * dnorm(s, 1.15, sqrt(1/12))},
       lower = -10,
       upper = x[i]
     )[[1]]
     pt2[i] <- integrate(
-      function(s) {0.5 * dnorm(s, -1, 0.5)},
+      function(s) {0.5 * dnorm(s, 0.85, sqrt(1/24))},
       lower = -10,
       upper = x[i]
     )[[1]]

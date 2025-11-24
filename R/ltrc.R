@@ -124,7 +124,7 @@ ltrc <- function(formula, trunc_time, data = NULL, n_start = 10, int_knots = 2, 
 
     # print("getting variance")
     # print(diag(solve(tmp_res$inform)))
-    beta_var_positive <- all(diag(solve(tmp_res$inform))[1:p] > 0)
+    beta_var_positive <- tryCatch({all(diag(solve(tmp_res$inform))[1:p] > 0)}, error = function(e) {return(FALSE)})
 
     if (best_lnlklhd < tmp_res$lnlklhd) {
       best_lnlklhd <- tmp_res$lnlklhd
