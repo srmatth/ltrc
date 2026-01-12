@@ -1,11 +1,14 @@
 newtraph <- function(y, X, t, delta, beta, gamma, lklhd, verbose = FALSE, EPS = 1e-2, iter_max = 100,
-                     K = 3, knots = NULL, boundary_knots = NULL, diag_only = FALSE) {
+                     K = 3, knots = NULL, boundary_knots = NULL, diag_only = FALSE, weights = NULL) {
   ## Evaluate likelihood for starting values of theta
   # errs <- y - X * beta
   if (!is.null(knots) && !is.null(boundary_knots)) {
-    init_res <- lklhd(beta, gamma, X, y, t, delta, knots = knots, boundary_knots = boundary_knots, diag_only = diag_only)
+    init_res <- lklhd(beta, gamma, X, y, t, delta, knots = knots, boundary_knots = boundary_knots, diag_only = diag_only, weights = weights)
   } else {
-    init_res <- lklhd(beta, gamma, X, y, t, delta, K = K, diag_only = diag_only)
+    init_res <- lklhd(beta, gamma, X, y, t, delta, K = K, diag_only = diag_only, weights = weights)
+  }
+  if (is.null(weights)) {
+    weights <- rep(1, length(y))
   }
 
   ## initialize values
@@ -38,9 +41,9 @@ newtraph <- function(y, X, t, delta, beta, gamma, lklhd, verbose = FALSE, EPS = 
     # errs <- y - X * theta_new[1:length(beta)]
     new_res <- tryCatch({
       if (!is.null(knots) && !is.null(boundary_knots)) {
-        tmp <- lklhd(theta_new[1:p], theta_new[(p+1):(p+p_gamma)], X, y, t, delta, knots = knots, boundary_knots = boundary_knots, diag_only = diag_only)
+        tmp <- lklhd(theta_new[1:p], theta_new[(p+1):(p+p_gamma)], X, y, t, delta, knots = knots, boundary_knots = boundary_knots, diag_only = diag_only, weights = weights)
       } else {
-        tmp <- lklhd(theta_new[1:p], theta_new[(p+1):(p+p_gamma)], X, y, t, delta, K = K, diag_only = diag_only)
+        tmp <- lklhd(theta_new[1:p], theta_new[(p+1):(p+p_gamma)], X, y, t, delta, K = K, diag_only = diag_only, weights = weights)
       }
       tmp
     },
@@ -58,9 +61,9 @@ newtraph <- function(y, X, t, delta, beta, gamma, lklhd, verbose = FALSE, EPS = 
       theta_new <- theta_old + delta_vec * step_size
       ## if (abs(step_halving_start - lnlklhd_new) <= EPS) break
       if (!is.null(knots) && !is.null(boundary_knots)) {
-        new_res <- lklhd(theta_new[1:p], theta_new[(p+1):(p+p_gamma)], X, y, t, delta, knots = knots, boundary_knots = boundary_knots, diag_only = diag_only)
+        new_res <- lklhd(theta_new[1:p], theta_new[(p+1):(p+p_gamma)], X, y, t, delta, knots = knots, boundary_knots = boundary_knots, diag_only = diag_only, weights = weights)
       } else {
-        new_res <- lklhd(theta_new[1:p], theta_new[(p+1):(p+p_gamma)], X, y, t, delta, K = K, diag_only = diag_only)
+        new_res <- lklhd(theta_new[1:p], theta_new[(p+1):(p+p_gamma)], X, y, t, delta, K = K, diag_only = diag_only, weights = weights)
       }
       lnlklhd_new <- new_res$lnlklhd
     }
@@ -93,9 +96,9 @@ newtraph <- function(y, X, t, delta, beta, gamma, lklhd, verbose = FALSE, EPS = 
   if (err_occurred) converge <- FALSE
 
   if (!is.null(knots) && !is.null(boundary_knots)) {
-    new_res <- lklhd(theta_new[1:p], theta_new[(p+1):(p+p_gamma)], X, y, t, delta, knots = knots, boundary_knots = boundary_knots, diag_only = FALSE)
+    new_res <- lklhd(theta_new[1:p], theta_new[(p+1):(p+p_gamma)], X, y, t, delta, knots = knots, boundary_knots = boundary_knots, diag_only = FALSE, weights = weights)
   } else {
-    new_res <- lklhd(theta_new[1:p], theta_new[(p+1):(p+p_gamma)], X, y, t, delta, K = K, diag_only = FALSE)
+    new_res <- lklhd(theta_new[1:p], theta_new[(p+1):(p+p_gamma)], X, y, t, delta, K = K, diag_only = FALSE, weights = weights)
   }
 
   # final_inform <- as.matrix(Matrix::nearPD(new_res$inform)$mat)

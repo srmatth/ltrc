@@ -8,6 +8,7 @@ ltrc(
   formula,
   trunc_time,
   data = NULL,
+  weights = NULL,
   n_start = 10,
   int_knots = 2,
   verbose = FALSE,
@@ -28,6 +29,8 @@ from the \code{survival} package}
 \item{trunc_time}{a vector indicating the truncation time for each subject}
 
 \item{data}{The data where the variables in the formula can be found}
+
+\item{weights}{an optional vector of sampling weights}
 
 \item{n_start}{the number of random starts for the fitting algorithm}
 

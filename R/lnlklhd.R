@@ -1,9 +1,10 @@
-lnlklhd <- function(beta, gamma, X, y, t, delta, K = 3, knots = NULL, boundary_knots = NULL,
+lnlklhd <- function(beta, gamma, X, y, t, delta, weights, K = 3, knots = NULL, boundary_knots = NULL,
                     diag_only = FALSE) {
   ## Error checking and argument massaging
   if (!is.matrix(X)) {
     X <- matrix(X, ncol = 1)
   }
+  if (missing(weights)) weights <- rep(1, nrow(X))
 
   ## Getting some important values
   N <- nrow(X)
@@ -52,6 +53,8 @@ lnlklhd <- function(beta, gamma, X, y, t, delta, K = 3, knots = NULL, boundary_k
   t_indx <- data.frame(t_indx, t_order) %>%
     dplyr::arrange(t_order) %>%
     dplyr::pull(t_indx)
+  w_e <- weights[e_order]
+  w_t <- weights[t_order]
 
   ## define function we want to integrate over
   to_int <- function(s) {
@@ -80,12 +83,12 @@ lnlklhd <- function(beta, gamma, X, y, t, delta, K = 3, knots = NULL, boundary_k
 
   new_basis <- predict_basis(midpoints, basis$knots, basis$boundary_knots)
 
-  lklhd <- sum(delta * (basis$basis %*% gamma)[e_indx]) - sum(t(int_1) %*% ind_mat)
+  lklhd <- sum(w_e * delta * (basis$basis %*% gamma)[e_indx]) - sum(w_t * (t(int_1) %*% ind_mat))
 
-  score_1 <- t(X) %*% matrix(-delta * (basis$d_1 %*% gamma)[e_indx] +
-                               exp(basis$basis %*% gamma)[e_indx] -
-                               exp(basis$basis %*% gamma)[t_indx], ncol = 1)
-  score_2 <- rowSums(t(delta * basis$basis[e_indx,]) - t(int_2) %*% ind_mat)
+  score_1 <- t(X) %*% matrix(w_e * (-delta * (basis$d_1 %*% gamma)[e_indx] +
+                               exp(basis$basis %*% gamma)[e_indx]) -
+                               w_t * exp(basis$basis %*% gamma)[t_indx], ncol = 1)
+  score_2 <- rowSums(t(w_e * delta * basis$basis[e_indx,]) - t(w_t * int_2) %*% ind_mat)
   score <- c(score_1, score_2)
 
   tst <- exp(basis$basis %*% gamma)[e_indx]
@@ -101,11 +104,11 @@ lnlklhd <- function(beta, gamma, X, y, t, delta, K = 3, knots = NULL, boundary_k
   inform_4 <- matrix(0, nrow = p_gamma, ncol = p_gamma)
 
   for (i in 1:N) {
-    inform_1 <- inform_1 + X[i,] %*% t(X[i,]) * (delta[i] * tst5[i] - tst[i] * tst2[i] + tst3[i] * tst4[i])
-    inform_2 <- inform_2 + X[i,] %*% matrix(-tst8[i,] * delta[i] + tst6[i,] * tst[i] - tst7[i,] * tst3[i], nrow = 1)
+    inform_1 <- inform_1 + weights[i] * X[i,] %*% t(X[i,]) * (delta[i] * tst5[i] - tst[i] * tst2[i] + tst3[i] * tst4[i])
+    inform_2 <- inform_2 + weights[i] * X[i,] %*% matrix(-tst8[i,] * delta[i] + tst6[i,] * tst[i] - tst7[i,] * tst3[i], nrow = 1)
   }
   for (j in 1:p_gamma) {
-    inform_4[j,] <- -rowSums(t(new_basis[,j] * as.numeric(int_1) * new_basis) %*% ind_mat)
+    inform_4[j,] <- -rowSums(t(new_basis[,j] * as.numeric(int_1) * new_basis) %*% (ind_mat * matrix(weights, nrow = nrow(ind_mat), ncol = N, byrow = TRUE)))
   }
   inform_3 <- t(inform_2)
 

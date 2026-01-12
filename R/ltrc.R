@@ -6,6 +6,7 @@
 #'   from the `survival` package
 #' @param trunc_time a vector indicating the truncation time for each subject
 #' @param data The data where the variables in the formula can be found
+#' @param weights an optional vector of sampling weights
 #' @param n_start the number of random starts for the fitting algorithm
 #' @param int_knots the number of interior knots for the spline basis
 #' @param verbose bool indicating if intermediate steps should be printed,
@@ -23,7 +24,7 @@
 #'
 #' @return a list with several elements
 #' @export
-ltrc <- function(formula, trunc_time, data = NULL, n_start = 10, int_knots = 2, verbose = FALSE,
+ltrc <- function(formula, trunc_time, data = NULL, weights = NULL, n_start = 10, int_knots = 2, verbose = FALSE,
                  n_folds = 5, knot_range = 1:10, knots = NULL, boundary_knots = NULL, sd_multiplier = 3,
                  diag_only = TRUE, iter_max = 100, return_all = FALSE) {
   dat_l <- extract_surv_components(formula, data)
@@ -37,6 +38,11 @@ ltrc <- function(formula, trunc_time, data = NULL, n_start = 10, int_knots = 2, 
     X <- matrix(X, ncol = 1)
   }
   p <- ncol(X)
+  N <- length(y)
+  if (is.null(weights)) {
+    weights <- rep(1, N)
+  }
+  stopifnot(length(weights) == N)
 
   naive_mod <- lm(y ~ X)
   beta <- naive_mod$coefficients[-1]
@@ -67,18 +73,21 @@ ltrc <- function(formula, trunc_time, data = NULL, n_start = 10, int_knots = 2, 
         X_train <- X[train_indices,]
         t_train <- t[train_indices]
         delta_train <- delta[train_indices]
+        weights_train <- weights[train_indices]
 
         y_test <- y[test_indices]
         X_test <- X[test_indices,]
         t_test <- t[test_indices]
         delta_test <- delta[test_indices]
+        weights_test <- weights[test_indices]
         best_lnlklhd <- -Inf
         ## loop over the starting values to find the best model
         for (i in 1:ncol(starts)) {
           beta_start <- as.numeric(starts[,i])
           # Train the model on the training set
           tmp_tmp_res <- newtraph(y_train, X_train, t_train, delta_train, beta_start, gamma_start, lklhd = lnlklhd, K = tmp_k,
-                                  verbose = verbose, diag_only = diag_only, iter_max = iter_max)
+                                  verbose = verbose, diag_only = diag_only, iter_max = iter_max,
+                                  weights = weights_train)
           if (best_lnlklhd < tmp_tmp_res$lnlklhd) {
             tmp_res <- tmp_tmp_res
           }
@@ -93,7 +102,8 @@ ltrc <- function(formula, trunc_time, data = NULL, n_start = 10, int_knots = 2, 
           t_test,
           delta_test,
           knots = tmp_res$knots,
-          boundary_knots = tmp_res$boundary_knots
+          boundary_knots = tmp_res$boundary_knots,
+          weights = weights_test
         )$lnlklhd
       }
       # Calculate average log-likelihood across all folds
@@ -117,7 +127,8 @@ ltrc <- function(formula, trunc_time, data = NULL, n_start = 10, int_knots = 2, 
     beta_start <- as.numeric(starts[,i])
     tmp_res <- newtraph(y, X, t, delta, beta_start, gamma_start, lklhd = lnlklhd, K = int_knots,
                         verbose = verbose, knots = knots, boundary_knots = boundary_knots,
-                        diag_only = diag_only, iter_max = iter_max)
+                        diag_only = diag_only, iter_max = iter_max,
+                        weights = weights)
     if (return_all) {
       all_res[[i]] <- tmp_res
     }
