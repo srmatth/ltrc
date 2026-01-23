@@ -28,6 +28,7 @@ get_clean_model <- function(mod) {
       num_predictors = mod$p,
       fitted_response = mod$fitted_values,
       residuals = mod$residuals,
+      martingale_residuals = mod$martingale_residuals,
       score = mod$score,
       information = mod$inform,
       information_efficient = mod$efficient_score_info

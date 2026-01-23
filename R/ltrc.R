@@ -214,6 +214,17 @@ ltrc <- function(formula, trunc_time, data = NULL, weights = NULL, n_start = 10,
     res
   }
 
+  martingale_residuals <- numeric(length(epsilon))
+
+  for (i in 1:length(epsilon)) {
+    martingale_residuals[i] <- m_s(
+      s = epsilon[i],
+      d_ = delta[i],
+      t_ = tau[i],
+      e_ = epsilon[i]
+    )
+  }
+
   contribs_m <- matrix(nrow = length(epsilon), ncol = p)
   for (i in 1:length(epsilon)) {
     e_i <- epsilon[i]
@@ -240,6 +251,7 @@ ltrc <- function(formula, trunc_time, data = NULL, weights = NULL, n_start = 10,
   best_res$predictors <- X
   best_res$fitted_values <- X %*% best_res$theta[1:p]
   best_res$residuals <- best_res$response - best_res$fitted_values
+  best_res$martingale_residuals <- martingale_residuals
   best_res$p <- p
   best_res$formula <- formula
   best_res$efficient_score_info <- efficient_score_info
