@@ -88,7 +88,11 @@ lnlklhd <- function(beta, gamma, X, y, t, delta, weights, K = 3, knots = NULL, b
   score_1 <- t(X) %*% matrix(w_e * (-delta * (basis$d_1 %*% gamma)[e_indx] +
                                exp(basis$basis %*% gamma)[e_indx]) -
                                w_t * exp(basis$basis %*% gamma)[t_indx], ncol = 1)
-  score_2 <- rowSums(t(w_e * delta * basis$basis[e_indx,]) - t(w_t * int_2) %*% ind_mat)
+  score_2 <- rowSums(
+    t(w_e * delta * basis$basis[e_indx,]) -
+      sweep(t(int_2) %*% ind_mat, 2, w_t, `*`)
+  )
+  # score_2 <- rowSums(t(w_e * delta * basis$basis[e_indx,]) - t(w_t * int_2) %*% ind_mat)
   score <- c(score_1, score_2)
 
   tst <- exp(basis$basis %*% gamma)[e_indx]
